@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W16 — 3D Hypercar Studio</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d14;color:#eaf4ff;font-family:Arial,sans-serif}
+header{padding:16px 20px;background:#101b29;border-bottom:1px solid #263b50}
+h1{margin:0;font-size:23px;color:#62dfff}
+header p{margin:6px 0 0;color:#9eb5c9;font-size:13px}
+main{max-width:1200px;margin:auto;padding:16px}
+.panel{background:#101b29;border:1px solid #263b50;border-radius:14px;padding:14px;margin-bottom:14px}
+.viewer{height:440px;position:relative;background:radial-gradient(ellipse at center,#23394d,#080d14 75%);border-radius:12px;overflow:hidden}
+#scene{width:100%;height:100%;display:block}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{background:#18354b;color:#eaf4ff;border:1px solid #37617c;padding:11px 14px;border-radius:9px;font-size:14px;cursor:pointer}
+button:active{background:#24516d}
+button.active{background:#087b9c;border-color:#52dfff}
+h2{font-size:18px;margin:0 0 12px}
+.info{color:#a9bfd1;font-size:14px;line-height:1.6}
+#status{color:#66dfff;font-size:13px;margin-top:10px}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}
+.part{padding:12px;background:#14283a;border:1px solid #29465e;border-radius:9px;cursor:pointer}
+.part b{display:block;margin-bottom:5px}
+.part small{color:#9bb4c8}
+#description{min-height:70px;color:#b7cbdc;line-height:1.5}
+@media(max-width:600px){.viewer{height:340px}header h1{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+<h1>W16 HYPERCAR STUDIO</h1>
+<p>Интерактивная 3D-модель и разборка гиперкара</p>
+</header>
+<main>
+<section class="panel">
+<h2>3D-модель автомобиля</h2>
+<div class="viewer">
+<canvas id="scene"></canvas>
+</div>
+<div class="controls">
+<button id="reset">Вернуть вид</button>
+<button id="rotate" class="active">Автовращение: ВКЛ</button>
+<button id="body">Убрать кузов</button>
+<button id="wheels">Убрать колёса</button>
+<button id="engine">Показать двигатель</button>
+<button id="explode">Разобрать модель</button>
+</div>
+<div id="status">Подготовка 3D-сцены...</div>
+<p class="info">Вращай модель пальцем или мышью. Приближай двумя пальцами или колёсиком мыши. Нажимай на детали, чтобы посмотреть информацию.</p>
+</section>
+<section class="panel">
+<h2>Каталог деталей</h2>
+<div class="parts" id="parts"></div>
+</section>
+<section class="panel">
+<h2 id="partTitle">Информация о детали</h2>
+<div id="description">Выбери деталь в каталоге или нажми на неё в 3D-модели.</div>
+</section>
+</main>
+
+<script type="module">
+
+try {
+const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+const {OrbitControls} = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js');
+
+const canvas=document.getElementById('scene');
+const status=document.getElementById('status');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x101b29);
+
+const camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+camera.position.set(7,4,8);
+
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.setSize(canvas.clientWidth,canvas.clientHeight);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.target.set(0,0.8,0);
+
+scene.add(new THREE.HemisphereLight(0xc9eaff,0x17202c,2));
+
+const light=new THREE.DirectionalLight(0xffffff,3);
+light.position.set(5,10,7);
+scene.add(light);
+
+const floor=new THREE.Mesh(
+new THREE.PlaneGeometry(200,200),
+new THREE.MeshStandardMaterial({color:0x101820,roughness:0.8})
+);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-0.15;
+scene.add(floor);
+
+const car=new THREE.Group();
+scene.add(car);
+
+const bodyGroup=new THREE.Group();
+car.add(bodyGroup);
+
+const engineGroup=new THREE.Group();
+car.add(engineGroup);
+
+const wheelGroup=new THREE.Group();
+car.add(wheelGroup);
+
+const detailGroup=new THREE.Group();
+car.add(detailGroup);
+
+const paint=new THREE.MeshStandardMaterial({
+color:0x087bba,metalness:0.8,roughness:0.23
+});
+const black=new THREE.MeshStandardMaterial({color:0x10151c,metalness:0.5,roughness:0.4});
+const metal=new THREE.MeshStandardMaterial({color:0x9baab6,metalness:0.85,roughness:0.25});
+const rubber=new THREE.MeshStandardMaterial({color:0x090b0e,roughness:0.9});
+const glass=new THREE.MeshStandardMaterial({color:0x142c3b,metalness:0.5,roughness:0.15});
+const orange=new THREE.MeshStandardMaterial({color:0xff6c20,metalness:0.6,roughness:0.3});
+
+function box(parent,name,x,y,z,sx,sy,sz,material,group=detailGroup){
+const mesh=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);
+mesh.position.set(x,y,z);
+mesh.name=name;
+mesh.castShadow=true;
+mesh.receiveShadow=true;
+parent.add(mesh);
+return mesh;
+}
+
+function cylinder(parent,name,x,y,z,radius,length,material,axis='x'){
+const mesh=new THREE.Mesh(
+new THREE.CylinderGeometry(radius,radius,length,32),
+material
+);
+mesh.position.set(x,y,z);
+if(axis==='x')mesh.rotation.z=Math.PI/2;
+if(axis==='z')mesh.rotation.x=Math.PI/2;
+mesh.name=name;
+parent.add(mesh);
+return mesh;
+}
+
+// Нижняя платформа
+box(bodyGroup,'Карбоновое днище',0,0.55,0,4.7,0.25,1.8,black,bodyGroup);
+
+// Передняя и задняя части кузова
+box(bodyGroup,'Передняя часть кузова',-1.65,0.95,0,1.5,0.45,1.9,paint,bodyGroup);
+box(bodyGroup,'Задняя часть кузова',1.55,1.0,0,1.5,0.55,1.9,paint,bodyGroup);
+
+// Кабина
+const cabin=new THREE.Mesh(
+new THREE.BoxGeometry(1.9,0.65,1.45),
+glass
+);
+cabin.position.set(0,1.35,0);
+cabin.name='Стеклянная кабина';
+bodyGroup.add(cabin);
+
+// Крыша
+box(bodyGroup,'Крыша',0,1.72,0,1.25,0.12,1.4,paint,bodyGroup);
+
+// Передний сплиттер
+box(bodyGroup,'Передний сплиттер',-2.35,0.48,0,0.6,0.08,2.1,black,bodyGroup);
+
+// Заднее антикрыло
+box(bodyGroup,'Заднее антикрыло',2.25,1.65,0,0.5,0.09,2.0,black,bodyGroup);
+box(bodyGroup,'Крепление антикрыла',2.05,1.35,0,0.12,0.55,0.12,metal,bodyGroup);
+
+// Двигатель W16 — условная визуальная модель
+box(engineGroup,'Блок двигателя W16',1.0,1.05,0,1.45,0.7,0.9,metal,engineGroup);
+
+for(let i=0;i<4;i++){
+cylinder(engineGroup,'Впускной узел',0.55+i*0.3,1.52,0,0.13,0.55,orange,'x');
+}
+
+for(let i=0;i<4;i++){
+cylinder(engineGroup,'Турбокомпрессор',0.55+i*0.3,0.9,0.65,0.23,0.22,metal,'z');
+}
+
+box(engineGroup,'Интеркулер',0.3,0.8,-0.7,0.9,0.35,0.3,black,engineGroup);
+box(engineGroup,'Радиатор',-1.5,0.9,0,0.25,0.5,1.1,metal,engineGroup);
+
+// Колёса
+const wheelPositions=[
+[-1.55,0.48,-1.0],
+[-1.55,0.48,1.0],
+[1.55,0.48,-1.0],
+[1.55,0.48,1.0]
+];
+
+wheelPositions.forEach((p,i)=>{
+const wheel=new THREE.Group();
+wheel.position.set(...p);
+wheel.name='Колесо '+(i+1);
+wheelGroup.add(wheel);
+
+const tire=new THREE.Mesh(
+new THREE.CylinderGeometry(0.48,0.48,0.3,48),
+rubber
+);
+tire.rotation.x=Math.PI/2;
+wheel.add(tire);
+
+const rim=new THREE.Mesh(
+new THREE.CylinderGeometry(0.28,0.28,0.32,32),
+metal
+);
+rim.rotation.x=Math.PI/2;
+wheel.add(rim);
+
+const hub=new THREE.Mesh(
+new THREE.CylinderGeometry(0.09,0.09,0.34,24),
+black
+);
+hub.rotation.x=Math.PI/2;
+wheel.add(hub);
+});
+
+// Подвеска
+for(const x of [-1.55,1.55]){
+for(const z of [-0.55,0.55]){
+cylinder(detailGroup,'Элемент подвески',x,0.5,z,0.07,0.8,orange,'z');
+}
+}
+
+// Выхлопная система
+for(let z of [-0.35,0.35]){
+cylinder(detailGroup,'Выхлопная труба',2.35,0.75,z,0.1,0.35,metal,'x');
+}
+
+// Выбор деталей
+const raycaster=new THREE.Raycaster();
+const pointer=new THREE.Vector2();
+
+renderer.domElement.addEventListener('pointerdown',event=>{
+const rect=canvas.getBoundingClientRect();
+pointer.x=((event.clientX-rect.left)/rect.width)*2-1;
+pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
+raycaster.setFromCamera(pointer,camera);
+const hits=raycaster.intersectObjects(car.children,true);
+if(hits.length){
+const obj=hits[0].object;
+document.getElementById('partTitle').textContent=obj.name||'Деталь автомобиля';
+document.getElementById('description').textContent=
+'Выбрана деталь: '+(obj.name||'Компонент')+'. Это демонстрационная 3D-модель, не заводской чертёж.';
+}
+});
+
+let autoRotate=true;
+let bodyVisible=true;
+let wheelsVisible=true;
+let exploded=false;
+
+document.getElementById('rotate').onclick=()=>{
+autoRotate=!autoRotate;
+document.getElementById('rotate').textContent='Автовращение: '+(autoRotate?'ВКЛ':'ВЫКЛ');
+};
+
+document.getElementById('body').onclick=()=>{
+bodyVisible=!bodyVisible;
+bodyGroup.visible=bodyVisible;
+document.getElementById('body').textContent=bodyVisible?'Убрать кузов':'Вернуть кузов';
+};
+
+document.getElementById('wheels').onclick=()=>{
+wheelsVisible=!wheelsVisible;
+wheelGroup.visible=wheelsVisible;
+document.getElementById('wheels').textContent=wheelsVisible?'Убрать колёса':'Вернуть колёса';
+};
+
+document.getElementById('engine').onclick=()=>{
+engineGroup.visible=!engineGroup.visible;
+document.getElementById('engine').textContent=engineGroup.visible?'Скрыть двигатель':'Показать двигатель';
+};
+
+document.getElementById('explode').onclick=()=>{
+exploded=!exploded;
+bodyGroup.position.y=exploded?1.1:0;
+engineGroup.position.y=exploded?-0.2:0;
+wheelGroup.position.y=exploded?-0.35:0;
+document.getElementById('explode').textContent=exploded?'Собрать модель':'Разобрать модель';
+};
+
+document.getElementById('reset').onclick=()=>{
+camera.position.set(7,4,8);
+controls.target.set(0,0.8,0);
+controls.update();
+};
+
+const names=[
+'Кузов','Двигатель W16','Турбокомпрессоры',
+'Интеркулер','Радиатор','Колёса',
+'Карбоновое днище','Кабина','Антикрыло',
+'Подвеска','Выхлопная система'
+];
+
+const descriptions=[
+'Внешняя оболочка автомобиля.',
+'Концептуальная визуализация двигателя W16.',
+'Условно показанные турбокомпрессоры.',
+'Охлаждение наддувочного воздуха.',
+'Теплообменник системы охлаждения.',
+'Колёсные узлы с шинами и дисками.',
+'Нижняя защитная платформа.',
+'Кабина водителя.',
+'Аэродинамический элемент задней части.',
+'Условные элементы подвески.',
+'Система отвода выхлопных газов.'
+];
+
+const parts=document.getElementById('parts');
+
+names.forEach((name,i)=>{
+const item=document.createElement('div');
+item.className='part';
+item.innerHTML='<b>'+name+'</b><small>Открыть описание</small>';
+item.onclick=()=>{
+document.getElementById('partTitle').textContent=name;
+document.getElementById('description').textContent=descriptions[i];
+};
+parts.appendChild(item);
+});
+
+function resize(){
+const width=canvas.clientWidth;
+const height=canvas.clientHeight;
+if(!width||!height)return;
+camera.aspect=width/height;
+camera.updateProjectionMatrix();
+renderer.setSize(width,height,false);
+}
+
+window.addEventListener('resize',resize);
+
+function animate(){
+requestAnimationFrame(animate);
+if(autoRotate)car.rotation.y+=0.003;
+controls.update();
+renderer.render(scene,camera);
+}
+
+resize();
+animate();
+status.textContent='3D-модель загружена. Можно вращать и разбирать автомобиль.';
+
+}catch(error){
+document.getElementById('status').textContent='Не удалось загрузить 3D-библиотеку. Проверь интернет-соединение и открой страницу повторно.';
+console.error(error);
+}
+
+</script>
+</body>
+</html>
