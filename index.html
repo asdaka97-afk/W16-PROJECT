@@ -1,0 +1,900 @@
+
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<title>W16 PROJECT — Digital Hypercar</title>
+<style>
+:root{--bg:#080b10;--panel:#111720;--panel2:#151e29;--line:#273442;--text:#edf3f8;--muted:#91a0ae;--orange:#ff8a32;--cyan:#64d8e8;--green:#9ad7a0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#26313c 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 Inter,Segoe UI,Arial,sans-serif}
+button{font:inherit;cursor:pointer}.shell{max-width:1440px;margin:auto;padding:22px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:8px 0 20px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border:1px solid var(--orange);transform:skew(-12deg);display:grid;place-items:center;color:var(--orange);font-weight:900;font-size:17px}.brand b{letter-spacing:.18em;font-size:15px}.brand small{display:block;color:var(--muted);letter-spacing:.2em;font-size:10px}.status{border:1px solid #6c4a2e;color:#ffc18a;border-radius:99px;padding:6px 12px;font-size:11px;letter-spacing:.12em}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;padding:34px 0 24px;align-items:center}.eyebrow{color:var(--orange);letter-spacing:.22em;font-size:11px;font-weight:700}.hero h1{font-size:clamp(38px,6vw,76px);line-height:.98;margin:12px 0;letter-spacing:-.055em}.hero h1 span{color:var(--orange)}.hero p{max-width:650px;color:#b7c2cc;font-size:16px}.hero-art{min-height:250px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#18222d,#0b1017);overflow:hidden;position:relative;display:grid;place-items:center}.hero-art:after{content:"W16";position:absolute;right:12px;top:0;font-size:110px;font-weight:900;color:#ffffff08;letter-spacing:-.08em}
+.car-svg{width:100%;max-width:680px;filter:drop-shadow(0 22px 22px #0009);z-index:1}
+.nav{display:flex;gap:8px;overflow:auto;padding:8px 0 18px;border-bottom:1px solid var(--line)}.nav button{white-space:nowrap;border:1px solid var(--line);background:#0e141c;color:#b9c5cf;padding:10px 14px;border-radius:9px}.nav button.active,.nav button:hover{background:#332316;border-color:#9a5a2d;color:#ffd1a9}
+main{padding:24px 0}.page{display:none}.page.active{display:block}.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}.section-head h2{margin:0;font-size:27px}.section-head p{margin:4px 0 0;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.card{background:linear-gradient(145deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:17px;min-width:0}.card h3{margin:0 0 8px;font-size:15px}.metric{font-size:27px;font-weight:800;letter-spacing:-.04em}.unit{color:var(--muted);font-size:12px}.muted{color:var(--muted)}.orange{color:var(--orange)}.cyan{color:var(--cyan)}.wide{grid-column:span 2}.full{grid-column:1/-1}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.list{display:grid;gap:9px}.item{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #26313c}.item:last-child{border:0}.item span:last-child{text-align:right;color:#c7d0d8}
+.pill{font-size:11px;color:#ffd0a6;background:#382719;border:1px solid #67452b;border-radius:99px;padding:3px 8px;display:inline-block}.note{border-left:3px solid var(--orange);background:#171b20;padding:12px 14px;color:#c5cdd4;border-radius:0 8px 8px 0;margin:14px 0}.warn{border-left-color:#e6b75e}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:650px;background:#101720}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid #293541;font-size:13px}th{color:#ffc18a;background:#1a222c}td{color:#d2dbe2}tr:last-child td{border-bottom:0}
+.mode-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.mode{background:#111923;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:left;color:var(--text)}.mode.selected{border-color:var(--orange);background:#2a1d14}.mode b{display:block}.mode small{color:var(--muted)}
+#viewer{height:470px;background:radial-gradient(ellipse at 50% 45%,#273747,#0a1017 70%);border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}#viewer canvas{width:100%;height:100%;display:block}.viewer-label{position:absolute;left:16px;top:14px;z-index:2;color:#dbe5ed;font-size:11px;letter-spacing:.18em}.viewer-controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.viewer-controls button,.action{background:#1b2733;border:1px solid #354655;color:#dce6ed;padding:9px 13px;border-radius:8px}.viewer-controls button:hover,.action:hover{border-color:var(--orange);color:#ffc18a}
+.roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.step{border-top:2px solid var(--orange);padding:12px;background:#111923;border-radius:0 0 10px 10px}.step b{display:block;margin:6px 0}.step small{color:var(--muted)}
+footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0;color:#82909d;font-size:12px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.mode-grid{grid-template-columns:repeat(2,1fr)}.roadmap{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+@media(max-width:560px){.shell{padding:14px}.grid,.three{grid-template-columns:1fr}.wide{grid-column:span 1}.hero{padding-top:24px}.hero-art{min-height:190px}#viewer{height:330px}.roadmap{grid-template-columns:1fr}.section-head{display:block}}
+
+.parts-layout{display:grid;grid-template-columns:290px 1fr;gap:14px;align-items:start}.parts-list{position:sticky;top:12px}.parts-list input{width:100%;background:#0b1118;border:1px solid var(--line);border-radius:8px;padding:11px;color:var(--text);outline:none}.part-filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.part-filters button{background:#0d141c;color:#aebbc6;border:1px solid var(--line);padding:6px 9px;border-radius:99px;font-size:11px}.part-filters button.active{border-color:var(--orange);color:#ffd0a6;background:#2c1d13}.part-items{display:grid;gap:5px;max-height:620px;overflow:auto}.part-choice{display:block;width:100%;text-align:left;border:1px solid transparent;background:#121b25;color:#dce5ec;padding:10px;border-radius:8px}.part-choice small{display:block;color:#8e9daa;font-size:11px}.part-choice.active{border-color:#a55e2e;background:#2a1d14}.parts-detail{display:grid;gap:14px;min-width:0}.part-title-row{display:flex;justify-content:space-between;gap:12px;align-items:start}.part-title-row h3{font-size:26px;margin:5px 0 0}.part-title-row .muted{font-size:13px}.part-title-row .eyebrow{font-size:10px}#partViewer{height:390px;position:relative;overflow:hidden;border:1px solid #293744;border-radius:12px;margin-top:14px;background:radial-gradient(ellipse at 50% 42%,#26394a,#0a1017 70%)}#partViewer canvas{width:100%;height:100%;display:block}#partFallback{position:absolute;inset:0;display:grid;place-items:center;color:#9eacb8}.part-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}.part-facts div{background:#0d141c;padding:10px;border-radius:8px}.part-facts small{display:block;color:#82919e;font-size:10px}.part-facts b{font-size:12px}.part-description h3{margin:0 0 12px}.part-description h4{margin:18px 0 5px;color:#ffc18a}.part-description p{color:#c4ced7;margin:0}.part-links{display:flex;gap:7px;flex-wrap:wrap}.part-links button{background:#15212b;border:1px solid #334453;color:#c8d7e2;padding:6px 9px;border-radius:7px;font-size:12px}.part-links button:hover{border-color:var(--orange);color:#ffd0a6}
+@media(max-width:850px){.parts-layout{grid-template-columns:1fr}.parts-list{position:static}.part-items{max-height:260px;grid-template-columns:1fr 1fr}#partViewer{height:310px}}
+@media(max-width:520px){.part-items{grid-template-columns:1fr}.part-facts{grid-template-columns:1fr}}
+
+#systemControls button{font-size:14px;padding:10px 12px}#viewer canvas{touch-action:none}#systemControls button.active{border-color:#ff8735;color:#ffbd8d}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+ <div class="brand"><div class="mark">W16</div><div><b>W16 PROJECT</b><small>DIGITAL HYPERCAR PROGRAM</small></div></div>
+ <div class="status">CONCEPT · VERSION 1.0</div>
+</header>
+<section class="hero">
+ <div><div class="eyebrow">MULTIMODAL HYBRID HYPERCAR</div><h1>ENGINEERED<br><span>BEYOND LIMITS.</span></h1>
+ <p>Единая цифровая среда проекта: концепция автомобиля, интерактивная 3D-визуализация, архитектура систем, режимы, обслуживание и программа разработки.</p>
+ <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:18px"><button class="action" onclick="showPage('studio')">Открыть 3D-студию</button><button class="action" onclick="showPage('architecture')">Архитектура проекта</button></div></div>
+ <div class="hero-art">
+ <svg class="car-svg" viewBox="0 0 760 330" role="img" aria-label="Стилизованная концепция гиперкара W16">
+ <defs><linearGradient id="body" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#9aa8b4"/><stop offset=".35" stop-color="#344451"/><stop offset=".7" stop-color="#151e27"/><stop offset="1" stop-color="#71808c"/></linearGradient><linearGradient id="glass"><stop stop-color="#4f7788"/><stop offset="1" stop-color="#111d28"/></linearGradient></defs>
+ <ellipse cx="380" cy="270" rx="300" ry="25" fill="#000" opacity=".55"/>
+ <path d="M75 224 L116 192 201 169 268 114 Q300 91 365 92 L480 108 552 157 650 184 697 215 676 241 585 252 151 252 91 245Z" fill="url(#body)" stroke="#a8b4be" stroke-width="2"/>
+ <path d="M265 116 Q302 95 360 99 L461 114 515 158 225 160Z" fill="url(#glass)" stroke="#647887" stroke-width="2"/>
+ <path d="M369 101 L376 157 M475 118 L515 158" stroke="#a7b8c4" stroke-width="3" opacity=".55"/>
+ <path d="M116 193 L208 172 252 174 210 205 115 218Z" fill="#1a2933"/><path d="M521 165 L638 189 671 212 554 211Z" fill="#1b2934"/>
+ <path d="M91 224 L179 223 216 235 111 239Z" fill="#ff8a32"/><path d="M573 216 L684 213 670 228 576 232Z" fill="#ff8a32"/>
+ <path d="M246 184 Q375 199 533 177 L580 215 Q402 244 203 218Z" fill="#202c36" stroke="#64717b" stroke-width="2"/>
+ <path d="M280 190 L500 190" stroke="#ff9a4d" stroke-width="3" opacity=".8"/>
+ <circle cx="225" cy="239" r="48" fill="#070a0e" stroke="#778590" stroke-width="6"/><circle cx="225" cy="239" r="25" fill="#263440" stroke="#b0bbc3" stroke-width="4"/><circle cx="225" cy="239" r="7" fill="#ff8a32"/>
+ <circle cx="570" cy="239" r="48" fill="#070a0e" stroke="#778590" stroke-width="6"/><circle cx="570" cy="239" r="25" fill="#263440" stroke="#b0bbc3" stroke-width="4"/><circle cx="570" cy="239" r="7" fill="#ff8a32"/>
+ <path d="M310 254 L500 254" stroke="#ff8a32" stroke-width="2" opacity=".6"/>
+ </svg>
+ </div>
+</section>
+<nav class="nav">
+<button class="active" data-page="overview">Обзор</button><button data-page="studio">3D-студия</button><button data-page="architecture">Архитектура</button><button data-page="modes">Режимы</button><button data-page="parts">Каталог деталей</button><button data-page="service">Регламент ТО</button><button data-page="roadmap">Разработка</button><button data-page="budget">Бюджет</button><button data-page="documents">Документы</button>
+</nav>
+<main>
+
+<section id="overview" class="page active">
+ <div class="section-head">
+  <div><h2>Обзор проекта</h2><p>Ключевые параметры концепции W16.</p></div>
+  <span class="pill">PROJECT OVERVIEW</span>
+ </div>
+ <div class="grid">
+  <div class="card"><div class="muted">Силовая установка</div><div class="metric">W16</div><div class="unit">Гибридная архитектура</div></div>
+  <div class="card"><div class="muted">Мощность</div><div class="metric orange">4500–5000</div><div class="unit">л.с. · оценка ТЗ</div></div>
+  <div class="card"><div class="muted">Трансмиссия</div><div class="metric">4 AT</div><div class="unit">Планетарная КПП · концепция</div></div>
+  <div class="card"><div class="muted">Электрическая часть</div><div class="metric cyan">20–30</div><div class="unit">кВт·ч · оценка ёмкости батареи</div></div>
+  <div class="card wide">
+   <h3>Архитектура автомобиля</h3>
+   <div class="list">
+    <div class="item"><span>Двигатель</span><span>W16 · бензиновый</span></div>
+    <div class="item"><span>Наддув</span><span>Четыре турбокомпрессора</span></div>
+    <div class="item"><span>Электропривод</span><span>Гибридная система</span></div>
+    <div class="item"><span>Привод</span><span>Полный · концепция</span></div>
+    <div class="item"><span>Кузов</span><span>Монокок · композитная структура</span></div>
+   </div>
+  </div>
+  <div class="card wide">
+   <h3>Основные направления</h3>
+   <div class="list">
+    <div class="item"><span>01 · Силовая установка</span><span>W16 и наддув</span></div>
+    <div class="item"><span>02 · Гибрид</span><span>Батарея и электромоторы</span></div>
+    <div class="item"><span>03 · Шасси</span><span>Подвеска и тормоза</span></div>
+    <div class="item"><span>04 · Электроника</span><span>Управление системами</span></div>
+    <div class="item"><span>05 · Испытания</span><span>Проверка концепции</span></div>
+   </div>
+  </div>
+ </div>
+ <div class="note warn">Параметры мощности и другие характеристики являются проектными оценками, а не подтверждёнными результатами испытаний.</div>
+</section>
+
+<section id="studio" class="page">
+ <div class="section-head">
+  <div><h2>Интерактивная 3D-студия</h2><p>Визуализация автомобиля и его основных систем.</p></div>
+  <span class="pill">THREE.JS</span>
+ </div>
+ <div id="viewer">
+  <div class="viewer-label">W16 · INTERACTIVE 3D MODEL</div>
+  <div id="fallback" style="display:none;position:absolute;inset:0;z-index:4;background:#101720;place-items:center;padding:20px;text-align:center;color:#dce5ed"></div>
+ </div>
+ <div class="viewer-controls">
+  <button id="resetView">Сбросить вид</button>
+  <button id="autoRotate">Автоповорот: вкл.</button>
+  <button id="explode">Разобрать автомобиль</button>
+  <button id="bodyToggle">Убрать кузов</button>
+  <button id="wheelsToggle">Убрать колёса</button>
+ </div>
+ <div class="viewer-controls" id="systemControls">
+  <button data-system="all" class="active">Всё</button>
+  <button data-system="body">Кузов</button>
+  <button data-system="engine">Двигатель</button>
+  <button data-system="cooling">Охлаждение</button>
+  <button data-system="fuel">Топливо</button>
+  <button data-system="hybrid">Гибрид</button>
+  <button data-system="suspension">Подвеска</button>
+  <button data-system="brakes">Тормоза</button>
+  <button data-system="wheels">Колёса</button>
+ </div>
+ <div class="two">
+  <div class="card">
+   <h3>Управление просмотром</h3>
+   <p class="muted">Вращай модель мышью или пальцем. Масштабирование — прокруткой или жестом двумя пальцами. Нажимай на детали, чтобы открыть информацию, если для них предусмотрена интерактивность.</p>
+  </div>
+  <div class="card">
+   <h3>Статус модели</h3>
+   <p class="muted">Геометрия является схематичной концептуальной моделью. Она не заменяет заводскую CAD-модель и технические чертежи.</p>
+  </div>
+ </div>
+</section>
+
+<section id="architecture" class="page">
+ <div class="section-head">
+  <div><h2>Архитектура проекта</h2><p>Основные подсистемы гиперкара.</p></div>
+ </div>
+ <div class="three">
+  <div class="card"><span class="pill">01 · ENGINE</span><h3>Двигатель W16</h3><p class="muted">Бензиновая силовая установка с четырьмя турбокомпрессорами. Конкретные параметры требуют расчёта и испытаний.</p></div>
+  <div class="card"><span class="pill">02 · HYBRID</span><h3>Гибридная система</h3><p class="muted">Электрические моторы, высоковольтная батарея, инверторы и система управления энергией.</p></div>
+  <div class="card"><span class="pill">03 · TRANSMISSION</span><h3>Трансмиссия</h3><p class="muted">Планетарная автоматическая коробка передач, гидротрансформатор и дифференциал.</p></div>
+  <div class="card"><span class="pill">04 · COOLING</span><h3>Охлаждение</h3><p class="muted">Отдельные контуры охлаждения двигателя, наддува, трансмиссии и электрических компонентов.</p></div>
+  <div class="card"><span class="pill">05 · CHASSIS</span><h3>Шасси</h3><p class="muted">Несущая структура, подвеска, рулевое управление и колёсные узлы.</p></div>
+  <div class="card"><span class="pill">06 · BRAKES</span><h3>Тормоза</h3><p class="muted">Карбон-керамические диски и тормозные механизмы по концепции.</p></div>
+  <div class="card"><span class="pill">07 · BODY</span><h3>Кузов</h3><p class="muted">Аэродинамический кузов с композитными элементами.</p></div>
+  <div class="card"><span class="pill">08 · ELECTRONICS</span><h3>Электроника</h3><p class="muted">Контроллеры, датчики и системы мониторинга.</p></div>
+  <div class="card"><span class="pill">09 · SAFETY</span><h3>Безопасность</h3><p class="muted">Пассивная и активная безопасность требуют отдельной разработки и проверки.</p></div>
+ </div>
+ <div class="note warn">Архитектура отражает проектную концепцию. Совместимость подсистем и соответствие требованиям безопасности пока не подтверждены.</div>
+</section>
+
+<section id="modes" class="page">
+ <div class="section-head">
+  <div><h2>Семь режимов</h2><p>Выбери режим, чтобы увидеть его назначение по исходному ТЗ.</p></div>
+ </div>
+ <div class="mode-grid" id="modesGrid"></div>
+ <div class="card" id="modeDetail" style="margin-top:14px"></div>
+ <div class="note">Перечень режимов воспроизводит концепцию документов. Это не переключатель реального автомобиля и не инструкция по настройке силовой установки.</div>
+</section>
+
+<section id="parts" class="page">
+ <div class="section-head">
+  <div><h2>Каталог деталей · 3D Parts Explorer</h2><p>Выбирай компонент из каталога, открывай его отдельную карточку и вращай модель.</p></div>
+  <span class="pill">CONCEPT COMPONENT LIBRARY</span>
+ </div>
+ <div class="parts-layout">
+  <aside class="card parts-list">
+   <input id="partSearch" type="search" placeholder="Поиск детали…" aria-label="Поиск детали">
+   <div id="partFilters" class="part-filters"></div>
+   <div id="partItems" class="part-items"></div>
+  </aside>
+  <div class="parts-detail">
+   <div class="card">
+    <div class="part-title-row">
+     <div><div class="eyebrow" id="partGroup">ENGINE / CORE</div><h3 id="partName">Блок цилиндров</h3><div class="muted" id="partEn">Cylinder block</div></div>
+     <span class="pill" id="partTag">КОНЦЕПТ</span>
+    </div>
+    <div id="partViewer">
+     <div class="viewer-label">INDIVIDUAL PART / 3D VIEW</div>
+     <div id="partFallback">Загрузка 3D-детали…</div>
+    </div>
+    <div class="viewer-controls">
+     <button id="partReset">Сбросить вид</button>
+     <button id="partSpin">Автоповорот: выкл.</button>
+     <button id="partWire">Каркас: выкл.</button>
+    </div>
+    <div class="part-facts">
+     <div><small>Группа</small><b id="partGroupFact">Двигатель</b></div>
+     <div><small>Количество / конфигурация</small><b id="partQty">1 узел</b></div>
+     <div><small>Статус данных</small><b>Концепция из ТЗ</b></div>
+    </div>
+   </div>
+   <div class="card part-description">
+    <h3>Подробное описание</h3>
+    <p id="partDesc"></p>
+    <h4>Назначение в системе</h4>
+    <p id="partRole"></p>
+    <h4>Связанные компоненты</h4>
+    <div id="partLinks" class="part-links"></div>
+    <div class="note warn">3D-форма схематичная и предназначена для изучения общей формы и расположения. Она не является точной CAD-геометрией, чертежом, допуском или инструкцией по изготовлению и установке.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="service" class="page">
+ <div class="section-head">
+  <div><h2>Регламент ТО</h2><p>Сводка из приложения «Регламент ТО и ресурс запчастей».</p></div>
+  <span class="pill">ОЦЕНОЧНЫЕ ИНТЕРВАЛЫ</span>
+ </div>
+ <div class="note warn">Сам документ прямо указывает, что ресурсные цифры предварительные и уточняются на этапе доводки. Таблица ниже — перенос данных, а не подтверждённый график обслуживания.</div>
+ <div class="table-wrap">
+  <table>
+   <thead><tr><th>Узел</th><th>City</th><th>Sport</th><th>Track</th><th>Drag/Nitro</th></tr></thead>
+   <tbody>
+    <tr><td>Моторное масло</td><td>5 000 км</td><td>3 000 км</td><td>500 км или 5 моточасов</td><td>каждые 2–3 заезда</td></tr>
+    <tr><td>Свечи зажигания</td><td>20 000 км</td><td>10 000 км</td><td>500 км</td><td>после каждого заезда</td></tr>
+    <tr><td>Поршни и кольца (осмотр)</td><td>30 000 км</td><td>20 000 км</td><td>2 000 км / 20 моточасов</td><td>10–15 заездов — переборка</td></tr>
+    <tr><td>Масло АКПП</td><td>60 000 км</td><td>30 000 км</td><td colspan="2">после каждых 10–15 заездов</td></tr>
+    <tr><td>Дорожные шины</td><td>15 000 км</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Батарея</td><td colspan="4">Осмотр каждые 10 000 км; ресурс 500–800 полных циклов (оценка документа)</td></tr>
+   </tbody>
+  </table>
+ </div>
+ <p class="muted">В приложении также предусмотрены отдельные осмотры трансмиссии, тормозов, подвески, электромоторов и высоковольтной проводки.</p>
+</section>
+
+<section id="roadmap" class="page">
+ <div class="section-head">
+  <div><h2>Программа разработки</h2><p>Этапы и сроки из исходного документа.</p></div>
+ </div>
+ <div class="roadmap">
+  <div class="step"><small>ЭТАП 01 · 6–12 мес.</small><b>Концепция и архитектура</b><span class="muted">Компоновка, требования, риски, выбор базовых решений.</span></div>
+  <div class="step"><small>ЭТАП 02 · 12–24 мес.</small><b>Детальное проектирование</b><span class="muted">CAD, расчёты, спецификации, документация.</span></div>
+  <div class="step"><small>ЭТАП 03 · 18–24 мес.</small><b>Стендовые испытания</b><span class="muted">Проверка подсистем и лабораторная валидация.</span></div>
+  <div class="step"><small>ЭТАП 04 · 12–18 мес.</small><b>Прототип и испытания</b><span class="muted">Интеграция и профессиональные испытания на полигоне.</span></div>
+  <div class="step"><small>ЭТАП 05 · 12–18 мес.</small><b>Сертификация и малая серия</b><span class="muted">Безопасность, соответствие нормам, документация.</span></div>
+ </div>
+ <div class="card" style="margin-top:14px">
+  <h3>Команда и инфраструктура</h3>
+  <p class="muted">В ТЗ заложена команда около 100 специалистов: двигатель, трансмиссия, гибрид, шасси, подвеска, аэродинамика, тормоза, испытания, управление программой. Указаны моторный и трансмиссионный стенды, лаборатории, климатическая камера, аэродинамическая труба и производственное оборудование.</p>
+ </div>
+</section>
+
+<section id="budget" class="page">
+ <div class="section-head">
+  <div><h2>Бюджет программы</h2><p>Оценки из раздела 18 технического задания.</p></div>
+ </div>
+ <div class="grid">
+  <div class="card"><div class="muted">ФАЗ / НИОКР</div><div class="metric">150–300</div><div class="unit">млн ₽</div></div>
+  <div class="card"><div class="muted">Оборудование и стенды</div><div class="metric">300–600</div><div class="unit">млн ₽</div></div>
+  <div class="card"><div class="muted">Прототип и испытания</div><div class="metric">400–800</div><div class="unit">млн ₽</div></div>
+  <div class="card"><div class="muted">ФОТ команды</div><div class="metric">600–1000</div><div class="unit">млн ₽ · 5–7 лет</div></div>
+  <div class="card wide">
+   <h3>Общая оценка</h3><div class="metric orange">1,5–4 млрд ₽</div>
+   <p class="muted">Включает оценку ФАЗ, оборудования, прототипа, сертификации, команды и резерва. Значения не являются коммерческими предложениями или подтверждённой сметой.</p>
+  </div>
+  <div class="card wide">
+   <h3>Альтернативы из ТЗ</h3>
+   <div class="list">
+    <div class="item"><span>Единый режим</span><span>15–40 млн ₽</span></div>
+    <div class="item"><span>Дрэг-проект</span><span>10–30 млн ₽</span></div>
+    <div class="item"><span>Гибрид</span><span>20–50 млн ₽</span></div>
+    <div class="item"><span>Симулятор / 3D</span><span>~0 ₽ (оценка документа)</span></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="documents" class="page">
+ <div class="section-head">
+  <div><h2>Исходные документы</h2><p>Цифровая версия собрана на основе двух загруженных файлов.</p></div>
+ </div>
+ <div class="two">
+  <div class="card">
+   <span class="pill">ОСНОВНОЙ ДОКУМЕНТ</span>
+   <h3 style="margin-top:12px">W16_PROJECT_full_program.docx</h3>
+   <p class="muted">Техническое задание и план программы разработки. 20 разделов: от концепции и систем до бюджета, рисков, легализации и альтернатив.</p>
+   <p class="orange">Версия 2.0 · 14 страниц</p>
+  </div>
+  <div class="card">
+   <span class="pill">ПРИЛОЖЕНИЕ 2</span>
+   <h3 style="margin-top:12px">W16_reglament_TO.docx</h3>
+   <p class="muted">Регламент ТО и ресурс запчастей по режимам эксплуатации: интервалы, оценка стоимости владения, контрольные процедуры.</p>
+   <p class="orange">20.11.2026 · 4 страницы</p>
+  </div>
+ </div>
+ <div class="note">Важные числовые значения перенесены как проектные оценки. В цифровом проекте они не повышаются до статуса проверенных характеристик. Для дальнейшей работы нужна отдельная инженерная ревизия противоречий, расчётов и нормативных требований.</div>
+</section>
+
+const pages=[...document.querySelectorAll('.page')],
+      nav=[...document.querySelectorAll('.nav button')];
+
+function showPage(id){
+ pages.forEach(p=>p.classList.toggle('active',p.id===id));
+ nav.forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(id==='studio'&&window.initScene)window.initScene();
+}
+
+nav.forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+const modes=[
+ ['EV Quiet','Электрический тихий режим','Электротяга; городское назначение','~950 л.с. заявленной электрической мощности'],
+ ['City / Comfort','Повседневный дорожный режим','Бензин; комфортная настройка','1500–1800 л.с. — оценка ТЗ'],
+ ['Sport','Спортивный дорожный режим','Бензин; повышенная динамика','2500–2800 л.с. — оценка ТЗ'],
+ ['Track','Закрытый трек','Гоночная конфигурация по концепции','4500–5000 л.с. — не подтверждено'],
+ ['Compound / Full Boost','Максимальная динамика концепции','Закрытый испытательный сценарий','5500–6000 л.с. — не подтверждено'],
+ ['Drag / Nitro','Дрэг-сценарий концепции','Только специализированная закрытая среда','6500–7500 л.с. — не подтверждено'],
+ ['Drift','Режим управляемого скольжения','Специализированная закрытая площадка','1200–2000 л.с. — оценка ТЗ']
+];
+
+const mg=document.getElementById('modesGrid'),
+      md=document.getElementById('modeDetail');
+
+function selectMode(i){
+ document.querySelectorAll('.mode').forEach((b,j)=>
+  b.classList.toggle('selected',i===j)
+ );
+ let m=modes[i];
+ md.innerHTML=`
+ <span class="pill">РЕЖИМ ${i+1} / 7</span>
+ <h3 style="font-size:22px;margin:12px 0 4px">${m[0]}</h3>
+ <p class="muted">${m[1]}</p>
+ <div class="item"><span>Назначение</span><span>${m[2]}</span></div>
+ <div class="item"><span>Параметр мощности из ТЗ</span><span>${m[3]}</span></div>`;
+}
+
+modes.forEach((m,i)=>{
+ let b=document.createElement('button');
+ b.className='mode';
+ b.innerHTML=`<b>${m[0]}</b><small>${m[1]}</small>`;
+ b.onclick=()=>selectMode(i);
+ mg.appendChild(b);
+});
+selectMode(0);
+
+ // BODY — smooth AMG ONE-inspired monocoque shell
+ const b=systems.body;
+ const shellMat=paint.clone();
+ shellMat.side=THREE.DoubleSide;
+
+ const stations=[
+  [-3.05,.62,.48,.82],
+  [-2.75,1.05,.48,.98],
+  [-2.25,1.18,.48,1.02],
+  [-1.75,1.16,.49,1.02],
+  [-1.25,1.10,.50,1.02],
+  [-.85,.96,.50,1.02],
+  [-.35,.88,.52,1.02],
+  [.35,.91,.53,1.02],
+  [.85,1.05,.52,1.02],
+  [1.35,1.15,.51,1.03],
+  [1.95,1.18,.49,1.03],
+  [2.5,1.08,.47,1.02],
+  [2.95,.78,.45,.98]
+ ];
+
+ const ringN=40, verts=[], inds=[];
+
+ for(let i=0;i<stations.length;i++){
+  const [x,w,bot,top]=stations[i];
+  for(let j=0;j<ringN;j++){
+   const a=2*Math.PI*j/ringN;
+   const sn=Math.sin(a),cs=Math.cos(a);
+   const z=cs*w;
+   const y=bot+(top-bot)*(0.5+0.5*sn);
+   verts.push(x,y,z);
+  }
+ }
+
+ for(let i=0;i<stations.length-1;i++)
+ for(let j=0;j<ringN;j++){
+  const a=i*ringN+j;
+  const b1=i*ringN+(j+1)%ringN;
+  const c=(i+1)*ringN+(j+1)%ringN;
+  const d=(i+1)*ringN+j;
+  inds.push(a,b1,d,b1,c,d);
+ }
+
+ const shellGeo=new THREE.BufferGeometry();
+ shellGeo.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(verts,3)
+ );
+ shellGeo.setIndex(inds);
+ shellGeo.computeVertexNormals();
+
+ mesh(
+  b,shellGeo,shellMat,[0,0,0],[0,0,0],
+  'Обтекаемая оболочка кузова',
+  'Сглаженная концептуальная оболочка в стилистике Mercedes-AMG ONE.'
+ );
+
+ // Отдельные панели кузова
+ function surfacePanel(group,x0,x1,width0,width1,y0,y1,material,name,desc){
+  const v=[],ix=[],nx=18,nz=16;
+
+  for(let i=0;i<=nx;i++){
+   const t=i/nx;
+   const x=x0+(x1-x0)*t;
+   const w=width0+(width1-width0)*t;
+   const y=y0+(y1-y0)*t;
+
+   for(let j=0;j<=nz;j++){
+    const q=(j/nz-.5)*2;
+    v.push(x,y+.035*(1-q*q),q*w);
+   }
+  }
+
+  for(let i=0;i<nx;i++)
+  for(let j=0;j<nz;j++){
+   let a=i*(nz+1)+j;
+   let c=(i+1)*(nz+1)+j;
+   ix.push(a,a+1,c,c,a+1,c+1);
+  }
+
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+  g.setIndex(ix);
+  g.computeVertexNormals();
+
+  return mesh(group,g,material,[0,0,0],[0,0,0],name,desc);
+ }
+
+ surfacePanel(
+  b,-2.9,-.85,.72,.94,1.00,1.07,
+  paint,'Передний капот AMG-стиля',
+  'Низкий длинный капот.'
+ );
+
+ surfacePanel(
+  b,1.15,2.78,.93,.76,1.04,.98,
+  paint,'Крышка моторного отсека',
+  'Задняя крышка.'
+ );
+
+ // Кабина
+ const cabin=mesh(
+  b,new THREE.BoxGeometry(1.78,.12,1.38),
+  paint,[.03,1.92,0],[0,0,0],
+  'Крыша кабины','Центральный купол кабины.'
+ );
+
+ const wind=mesh(
+  b,new THREE.BoxGeometry(1.18,.045,1.42),
+  glass,[-.79,1.68,0],[0,0,-.48],
+  'Лобовое стекло','Панорамное стекло.'
+ );
+
+ const rearGlass=mesh(
+  b,new THREE.BoxGeometry(.92,.045,1.34),
+  glass,[.87,1.68,0],[0,0,.54],
+  'Заднее стекло','Стекло моторного отсека.'
+ );
+
+ for(const z of [-.70,.70]){
+  mesh(
+   b,new THREE.BoxGeometry(1.28,.42,.045),
+   glass,[.08,1.66,z],[0,0,0],
+   'Боковое стекло','Тёмное боковое остекление.'
+  );
+
+  mesh(
+   b,new THREE.BoxGeometry(1.52,.22,.08),
+   paint,[.12,1.35,z],[0,0,0],
+   'Дверная панель','Боковая дверь.'
+  );
+
+  mesh(
+   b,new THREE.BoxGeometry(.36,.07,.09),
+   carbon,[-.28,1.42,z*1.04],[0,0,0],
+   'Воздухозаборник за дверью','Боковой воздуховод.'
+  );
+
+  mesh(
+   b,new THREE.BoxGeometry(.48,.08,.12),
+   carbon,[-.10,.66,z*1.18],[0,0,0],
+   'Карбоновый порог','Нижний порог.'
+  );
+ }
+
+ // Колёсные арки
+ for(const x of [-1.88,1.88])
+ for(const side of [-1,1]){
+  const arch=mesh(
+   b,new THREE.TorusGeometry(.70,.075,12,64,Math.PI),
+   carbon,[x,.73,side*1.04],[0,Math.PI,0],
+   'Арка колеса','Карбоновая кромка арки.'
+  );
+
+  arch.rotation.z=Math.PI;
+
+  mesh(
+   b,new THREE.BoxGeometry(1.02,.18,.24),
+   paint,[x,1.30,side*.99],[0,0,0],
+   'Плечо крыла','Расширение крыла.'
+  );
+ }
+
+ // Передняя часть
+ mesh(
+  b,new THREE.BoxGeometry(.18,.40,1.52),
+  carbon,[-2.96,.73,0],[0,0,0],
+  'Передняя решётка радиатора','Центральная решётка.'
+ );
+
+ for(let z=-.63;z<=.64;z+=.105){
+  mesh(
+   b,new THREE.BoxGeometry(.045,.34,.025),
+   alloy,[-2.85,.73,z],[0,0,0],
+   'Ламель решётки','Вертикальная ламель.'
+  );
+ }
+
+ mesh(
+  b,new THREE.BoxGeometry(.40,.10,2.72),
+  carbon,[-2.92,.42,0],[0,0,0],
+  'Передний сплиттер','Карбоновый сплиттер.'
+ );
+
+ // Задний диффузор
+ mesh(
+  b,new THREE.BoxGeometry(.36,.18,2.58),
+  carbon,[2.94,.48,0],[0,0,0],
+  'Задний диффузор','Аэродинамический элемент.'
+ );
+
+ // Заднее антикрыло
+ mesh(
+  b,new THREE.BoxGeometry(.62,.10,2.72),
+  paint,[2.28,1.62,0],[0,0,0],
+  'Активное заднее антикрыло','Заднее крыло.'
+ );
+
+ // Колёса
+ for(let x of [-1.86,1.86])
+ for(let z of [-1.27,1.27]){
+
+  mesh(
+   systems.wheels,
+   new THREE.TorusGeometry(.57,.19,24,72),
+   rubber,[x,.72,z],[0,0,0],
+   'Шина','Низкопрофильная шина.'
+  );
+
+  cyl(
+   systems.wheels,.37,.37,.16,
+   x,.72,z,alloy,'z',
+   'Кованый диск','Легкосплавный диск.'
+  );
+
+  for(let i=0;i<10;i++){
+   let a=i*Math.PI/5;
+
+   let sp=box(
+    systems.wheels,.055,.58,.045,
+    x+.27*Math.cos(a),
+    .72+.27*Math.sin(a),
+    z,alloy,'Спица диска',
+    'Спица колёсного диска.'
+   );
+
+   sp.rotation.z=a;
+  }
+
+  cyl(
+   systems.wheels,.11,.11,.22,
+   x,.72,z,orange,'z',
+   'Ступичная крышка','Центральная крышка.'
+  );
+
+  cyl(
+   systems.wheels,.28,.28,.055,
+   x,.72,z+(z>0?.11:-.11),
+   dark,'z','Тормозной диск',
+   'Вентилируемый диск.'
+  );
+
+  box(
+   systems.wheels,.18,.32,.12,
+   x+.34,.73,z+(z>0?.16:-.16),
+   red,'Тормозной суппорт',
+   'Концептуальная форма суппорта.'
+  );
+ }
+
+ // Начало модели двигателя W16
+ const e=systems.engine;
+
+ box(
+  e,2.15,.56,.92,
+  1.15,.88,0,dark,
+  'Центральный картер W16',
+  'Общий картер двигателя.'
+ );
+
+ box(
+  e,2.05,.18,1.05,
+  1.15,.54,0,black,
+  'Нижний картер двигателя',
+  'Нижняя часть картера.'
+ );
+
+ cyl(
+  e,.13,.13,2.05,
+  1.15,.86,0,alloy,'x',
+  'Коленчатый вал',
+  'Продольный вал W16.'
+ );
+
+ const bankAngles=[-52.5,-37.5,37.5,52.5];
+
+ const bankLabels=[
+  'Первый ряд первого VR8-модуля',
+  'Второй ряд первого VR8-модуля',
+  'Первый ряд второго VR8-модуля',
+  'Второй ряд второго VR8-модуля'
+ ];
+
+ const bankDirs=bankAngles.map(a=>({
+  a:a*Math.PI/180,
+  dy:Math.cos(a*Math.PI/180),
+  dz:Math.sin(a*Math.PI/180)
+ }));
+
+ for(let bank=0;bank<4;bank++){
+  const d=bankDirs[bank];
+  const cy=.94+d.dy*.44;
+  const cz=d.dz*.44;
+  const rot=d.a;
+
+  const headPos=[
+   1.14,
+   cy+d.dy*.42,
+   cz+d.dz*.42
+  ];
+
+  mesh(
+   e,new THREE.BoxGeometry(2.02,.25,.40),
+   alloy,headPos,[rot,0,0],
+   'Головка блока — '+bankLabels[bank],
+   'Одна из четырёх головок цилиндров W16.'
+  );
+ }
+
+  mesh(e,new THREE.BoxGeometry(2.06,.13,.43),carbon,[headPos[0],headPos[1]+d.dy*.19,headPos[2]+d.dz*.19],[rot,0,0],'Крышка клапанов — '+bankLabels[bank],'Крышка клапанного механизма соответствующего ряда.');
+
+  // Twin overhead camshafts per cylinder bank
+  for(let camSide of [-1,1]){
+   const camY=headPos[1]+d.dy*.27+(-d.dz)*camSide*.12;
+   const camZ=headPos[2]+d.dz*.27+d.dy*camSide*.12;
+   cyl(e,.045,.045,1.92,1.14,camY,camZ,orange,'x','Распределительный вал — '+bankLabels[bank],'Один из двух верхних распредвалов головки.');
+
+   for(let j=0;j<8;j++){
+    const x=.36+j*.22;
+    const lobe=mesh(e,new THREE.SphereGeometry(.075,12,10),gold,[x,camY+(-d.dz)*.045,camZ+d.dy*.045],[rot,0,0],'Кулачок распредвала','Кулачок привода клапана.');
+    lobe.scale.set(1.1,1,.65);
+   }
+  }
+
+  for(let i=0;i<4;i++){
+   const x=.42+i*.48;
+   const y=cy,z=cz;
+
+   mesh(e,new THREE.CylinderGeometry(.145,.145,.52,28),alloy,[x,y,z],[rot,0,0],'Гильза цилиндра '+(bank*4+i+1),'Одна из 16 цилиндровых гильз; расположение показано в четырёх рядах W16.');
+
+   mesh(e,new THREE.CylinderGeometry(.112,.112,.13,24),orange,[x,y+d.dy*.12,z+d.dz*.12],[rot,0,0],'Поршень '+(bank*4+i+1),'Поршень цилиндра '+(bank*4+i+1)+'.');
+
+   mesh(e,new THREE.CylinderGeometry(.035,.05,.38,12),gold,[x,.91+d.dy*.16,z+d.dz*.16],[rot,0,0],'Шатун '+(bank*4+i+1),'Шатун между поршнем и коленчатым валом.');
+
+   // Four valves per cylinder
+   for(let v=0;v<4;v++){
+    const off=(v-1.5)*.055;
+    mesh(e,new THREE.CylinderGeometry(.018,.032,.22,10),v<2?blue:red,[x+off,headPos[1]+d.dy*.18,headPos[2]+d.dz*.18],[rot,0,0],(v<2?'Впускной клапан ':'Выпускной клапан ')+(bank*16+i*4+v+1),'Один из четырёх клапанов цилиндра.');
+   }
+
+   mesh(e,new THREE.CylinderGeometry(.025,.025,.20,12),blue,[x,headPos[1]+d.dy*.30,headPos[2]+d.dz*.30],[rot,0,0],'Свеча зажигания '+(bank*4+i+1),'Свеча зажигания цилиндра.');
+
+   mesh(e,new THREE.CylinderGeometry(.055,.055,.16,16),black,[x,headPos[1]+d.dy*.42,headPos[2]+d.dz*.42],[rot,0,0],'Катушка зажигания '+(bank*4+i+1),'Индивидуальная катушка зажигания.');
+  }
+ }
+
+ // Intake plenums and runners
+ for(const z of [-.50,.50]){
+  box(e,1.72,.18,.32,1.1,1.94,z,blue,'Впускной ресивер','Ресивер наддувочного воздуха для соответствующей стороны двигателя.');
+
+  for(let i=0;i<4;i++)
+   tube(e,[[.42+i*.44,1.68,z],[.50+i*.44,1.83,z*1.15],[.78+i*.36,1.94,z]],.035,alloy,'Впускной канал цилиндра','Канал подачи воздуха к цилиндру.');
+ }
+
+ // Four exhaust manifolds
+ for(let i=0;i<4;i++){
+  const z=[-.84,-.34,.34,.84][i];
+
+  for(let j=0;j<4;j++)
+   tube(e,[[.40+j*.43,1.05,z*.55],[.28+j*.40,.82,z*.72],[.62,.72,z],[.92,.82,z]],.035,gold,'Выпускной коллектор W16','Коллектор отвода выхлопных газов от одного ряда.');
+ }
+
+ // Cooling system
+ const c=systems.cooling;
+
+ for(let i=0;i<3;i++){
+  const z=(i-1)*.68;
+  box(c,.16,1.14,.58,-2.30,.92,z,alloy,'Передний охладитель '+(i+1),'Один из трёх передних охладителей высокотемпературного контура, как описано Bugatti.');
+ }
+
+ for(let z=-.92;z<=.93;z+=.10)
+  box(c,.20,1.05,.025,-2.18,.92,z,blue,'Соты радиатора','Рёбра теплообменника.');
+
+ for(let i=0;i<3;i++){
+  const z=(i-1)*.65;
+  cyl(c,.30,.30,.12,-2.04,.92,z,black,'x','Вентилятор радиатора','Электровентилятор охлаждающего пакета.');
+
+  for(let k=0;k<7;k++){
+   const a=k*Math.PI*2/7;
+   const blade=box(c,.06,.28,.04,-2.0,.92+.14*Math.sin(a),z+.14*Math.cos(a),alloy,'Лопасть вентилятора','Лопасть вентилятора.');
+   blade.rotation.x=a;
+  }
+ }
+
+ tube(c,[[-2.15,1.45,-.7],[-1.7,1.60,-.7],[-.7,1.58,-.5],[.25,1.48,-.3]],.045,red,'Подача — высокий температурный контур','Схематичная магистраль основного охлаждения двигателя.');
+
+ tube(c,[[.35,.72,.3],[-.6,.68,.55],[-1.5,.72,.6],[-2.2,.78,.6]],.045,blue,'Возврат — высокий температурный контур','Обратная магистраль основного охлаждения.');
+
+ box(c,.30,.64,.62,.42,1.72,-.58,blue,'Первый водо-воздушный теплообменник','Один из двух теплообменников низкотемпературного контура на двигателе.');
+
+ box(c,.30,.64,.62,.42,1.72,.58,blue,'Второй водо-воздушный теплообменник','Второй теплообменник охлаждения наддувочного воздуха.');
+
+ tube(c,[[-1.8,1.20,-.8],[-.8,1.35,-.7],[.1,1.62,-.55],[.8,1.68,-.45]],.035,blue,'Низкотемпературная подача','Отдельная магистраль низкотемпературного контура.');
+
+ tube(c,[[.8,1.45,.45],[.1,1.25,.65],[-.8,1.10,.75],[-1.8,.72,.8]],.035,blue,'Низкотемпературный возврат','Обратная магистраль низкотемпературного контура.');
+
+ // Fuel delivery — schematic educational layout
+ const f=systems.fuel;
+
+ box(f,1.65,.34,.72,2.10,.55,0,black,'Топливный бак','Условное расположение топливного бака в задней части концепта.');
+
+ cyl(f,.17,.17,.38,1.42,.70,.18,red,'z','Электрический топливный насос','Насос подачи топлива; параметры и размещение требуют отдельного проектирования.');
+
+ cyl(f,.12,.12,.28,1.12,.74,.18,alloy,'z','Топливный фильтр','Фильтрация топлива перед подачей к двигателю.');
+
+ tube(f,[[2.65,.68,.15],[2.0,.82,.20],[1.42,.78,.18],[1.12,.78,.18]],.035,gold,'Подающая топливная линия','Схематичная подающая магистраль от бака к фильтру и насосу.');
+
+ for(const z of [-.46,.46]){
+  box(f,1.72,.09,.12,.98,1.82,z,gold,'Топливная рампа','Одна из рамп системы двухконтурного впрыска.');
+
+  for(let i=0;i<16;i++){
+   const x=.30+(i%8)*.20,row=Math.floor(i/8);
+   cyl(f,.027,.027,.16,x,1.69,z+(row?-.08:.08),alloy,'y','Форсунка прямого/распределённого впрыска','Одна из форсунок концепции duplex injection; официальное описание Chiron указывает 32 форсунки.');
+  }
+
+  tube(f,[[1.9,1.82,z],[1.55,1.96,z],[1.1,1.96,z],[.65,1.82,z]],.025,gold,'Подача к топливной рампе','Схематичный участок подачи топлива.');
+ }
+
+const parts=[
+{id:'block',cat:'Двигатель',group:'ENGINE / CORE',name:'Блок цилиндров',en:'Cylinder block',qty:'1 основной блок',tag:'Основа двигателя',desc:'Несущая основа двигателя W16. Внутри блока размещаются цилиндровые гильзы, опоры коленчатого вала и каналы для рабочих жидкостей. В исходном ТЗ рассматриваются чугунный вариант либо алюминиевый блок с чугунными гильзами; окончательный материал не утверждён.',role:'Объединяет цилиндры и основные опоры кривошипно-шатунного механизма, задаёт геометрию и жёсткость силового узла.',links:['liners','crank','heads'],shape:'block'},
+{id:'liners',cat:'Двигатель',group:'ENGINE / CORE',name:'Гильзы цилиндров',en:'Cylinder liners',qty:'16 цилиндров (концепция)',tag:'Деталь двигателя',desc:'Сменные рабочие поверхности цилиндров. В документе указаны усиленные чугунные гильзы. Они образуют поверхность, по которой движутся поршни, и отделяют камеру цилиндра от материала блока.',role:'Формируют износостойкую поверхность цилиндров и участвуют в отводе тепла к блоку.',links:['block','pistons','rings'],shape:'sleeve'},
+{id:'pistons',cat:'Двигатель',group:'ENGINE / RECIPROCATING',name:'Поршни',en:'Forged pistons',qty:'16 шт. по схеме W16',tag:'Кованый алюминий 2618 — ТЗ',desc:'Подвижные детали цилиндров, воспринимающие давление газов и передающие усилие на шатуны. В основном документе указаны кованые алюминиевые поршни из сплава 2618. Форма на модели условная.',role:'Преобразуют давление в цилиндре в возвратно-поступательное движение.',links:['rings','rods','liners'],shape:'piston'},
+{id:'rings',cat:'Двигатель',group:'ENGINE / RECIPROCATING',name:'Поршневые кольца',en:'Piston rings',qty:'Комплект на каждый поршень',tag:'Расходный узел',desc:'Кольца располагаются в канавках поршня. Их функции — уплотнение рабочей камеры, управление масляной плёнкой и передача части тепла от поршня к стенке цилиндра.',role:'Поддерживают газовое уплотнение и регулируют количество масла на стенке цилиндра.',links:['pistons','liners'],shape:'rings'},
+{id:'rods',cat:'Двигатель',group:'ENGINE / RECIPROCATING',name:'Шатуны',en:'Connecting rods',qty:'16 шт. по схеме',tag:'Сталь 4340 — ТЗ',desc:'Связывают поршни с коленчатым валом. В техническом задании указаны кованые шатуны из стали 4340. Реальная геометрия должна определяться отдельной инженерной разработкой.',role:'Передают усилие от поршня к кривошипу коленчатого вала.',links:['pistons','crank'],shape:'rod'},
+{id:'crank',cat:'Двигатель',group:'ENGINE / ROTATING',name:'Коленчатый вал',en:'Crankshaft',qty:'1 узел',tag:'Кованый / билиалитный — варианты ТЗ',desc:'Главный вращающийся вал двигателя с кривошипами, преобразующий возвратно-поступательное движение поршней во вращение. В исходном ТЗ рассматриваются кованое исполнение или билиалитный вариант.',role:'Собирает механическую мощность цилиндров и передаёт вращение к трансмиссии.',links:['rods','block','gearbox'],shape:'crank'},
+{id:'heads',cat:'Двигатель',group:'ENGINE / CYLINDER HEAD',name:'Головка блока цилиндров',en:'Cylinder head',qty:'Комплект головок по архитектуре W16',tag:'ГБЦ',desc:'Закрывает цилиндры сверху и формирует камеры сгорания, впускные и выпускные каналы, места установки клапанного механизма и свечей.',role:'Обеспечивает газообмен и герметизацию верхней части цилиндров.',links:['valves','springs','spark','gasket'],shape:'head'},
+{id:'valves',cat:'Двигатель',group:'ENGINE / VALVETRAIN',name:'Клапаны впускные и выпускные',en:'Intake & exhaust valves',qty:'4 на цилиндр по основной схеме',tag:'Выпускные титановые — ТЗ',desc:'Клапаны открывают и закрывают впускные и выпускные каналы. В основном документе для концепции указаны четыре клапана на цилиндр: два впускных и два выпускных.',role:'Управляют поступлением свежего заряда и выходом отработавших газов.',links:['heads','springs','cam'],shape:'valve'},
+{id:'springs',cat:'Двигатель',group:'ENGINE / VALVETRAIN',name:'Пружины клапанов',en:'Valve springs',qty:'По одной на клапан в схеме',tag:'Клапанный механизм',desc:'Возвращают клапаны в закрытое положение и удерживают контакт элементов клапанного привода.',role:'Обеспечивают возврат и контролируемое движение клапанов.',links:['valves','heads'],shape:'spring'},
+{id:'cam',cat:'Двигатель',group:'ENGINE / VALVETRAIN',name:'Распределительный вал',en:'Camshaft',qty:'Комплект — схема не уточнена',tag:'Концептуальная позиция',desc:'Вал с кулачками, задающими движение клапанов. Количество и привод требуют уточнения.',role:'Синхронизирует открытие и закрытие клапанов с рабочими циклами цилиндров.',links:['valves','springs','heads'],shape:'cam'},
+{id:'gasket',cat:'Двигатель',group:'ENGINE / SEALING',name:'Прокладка ГБЦ MLS',en:'Multi-layer steel head gasket',qty:'По стыкам блока и головок',tag:'MLS — ТЗ',desc:'Многослойная металлическая прокладка между блоком и головкой. Предназначена для герметизации камер сгорания и каналов жидкостей.',role:'Разделяет камеры цилиндров и каналы охлаждения и смазки.',links:['heads','block','studs'],shape:'gasket'},
+{id:'studs',cat:'Двигатель',group:'ENGINE / FASTENERS',name:'Шпильки крепления ГБЦ',en:'Cylinder-head studs',qty:'Комплект крепежа',tag:'Усиленный крепёж — ТЗ',desc:'Крепёжные элементы, стягивающие головку с блоком через прокладку. Марка, размеры и усилия затяжки в документах не заданы.',role:'Создают и удерживают прижим стыка головки и блока.',links:['heads','gasket','block'],shape:'stud'},
+{id:'spark',cat:'Двигатель',group:'ENGINE / IGNITION',name:'Свечи зажигания',en:'Spark plugs',qty:'16 шт. по схеме W16',tag:'Холодное калильное число — ТЗ',desc:'Создают электрический разряд для воспламенения смеси в бензиновом режиме. Конкретная модель свечи не выбрана.',role:'Обеспечивают управляемое воспламенение заряда в цилиндре.',links:['heads','coils'],shape:'spark'},
+{id:'coils',cat:'Электрика',group:'ELECTRICAL / IGNITION',name:'Катушки зажигания',en:'Ignition coils',qty:'Комплект по цилиндрам',tag:'Концептуальная позиция',desc:'Электрические преобразователи, формирующие высокое напряжение для свечей.',role:'Подают импульс высокого напряжения на свечи.',links:['spark'],shape:'coil'},
+{id:'turbo',cat:'Наддув',group:'BOOST / TURBOCHARGING',name:'Турбокомпрессор',en:'Turbocharger',qty:'4 шт. по концепции',tag:'4 турбины — ТЗ',desc:'Турбокомпрессор использует энергию выхлопных газов для вращения турбинного колеса, которое через общий вал приводит компрессорное колесо. Документ описывает четыре агрегата; параметры и компоновка требуют проверки.',role:'Повышает плотность воздуха на впуске в рамках заявленной системы наддува.',links:['intercooler','wastegate','exhaust'],shape:'turbo'},
+{id:'supercharger',cat:'Наддув',group:'BOOST / SUPERCHARGER',name:'Центробежный нагнетатель',en:'Centrifugal supercharger',qty:'1 шт. по концепции',tag:'Электромагнитная муфта — ТЗ',desc:'Механический компрессор центробежного типа. Его компоновка, привод и согласование с турбокомпрессорами требуют расчёта.',role:'Предусмотрен как дополнительный источник наддува в компаундной концепции.',links:['intercooler','turbo'],shape:'supercharger'},
+{id:'wastegate',cat:'Наддув',group:'BOOST / CONTROL',name:'Вестгейт и байпас',en:'Wastegate & bypass valve',qty:'Комплект клапанов',tag:'Электропривод — ТЗ',desc:'Регулирующие элементы системы наддува. Конкретная схема управления требует отдельной валидации.',role:'Участвуют в регулировании потоков внутри системы наддува.',links:['turbo','supercharger','intercooler'],shape:'valve'},
+{id:'intercooler',cat:'Наддув',group:'BOOST / CHARGE COOLING',name:'Интеркулер воздух–вода',en:'Water-to-air intercooler',qty:'Увеличенный узел — ТЗ',tag:'Отдельный контур охлаждения',desc:'Теплообменник, который охлаждает сжатый воздух перед поступлением в двигатель. Насосы, радиаторы, объёмы и тепловые режимы не детализированы.',role:'Снижает температуру сжатого воздуха.',links:['turbo','supercharger','cooler'],shape:'intercooler'},
+{id:'cooler',cat:'Охлаждение',group:'COOLING / HEAT EXCHANGER',name:'Радиатор и теплообменник',en:'Radiator & heat exchanger',qty:'Несколько контуров',tag:'Система охлаждения',desc:'Теплообменные узлы для отвода тепла от двигателя и отдельных систем автомобиля.',role:'Отводят тепло из рабочих контуров.',links:['intercooler','battery'],shape:'radiator'},
+{id:'exhaust',cat:'Наддув',group:'EXHAUST / MANIFOLD',name:'Выпускной коллектор',en:'Exhaust manifold',qty:'По рядам цилиндров',tag:'Теплостойкий сплав — концепция',desc:'Собирает выхлопные газы из цилиндров и направляет их к выпускной системе и турбокомпрессорам.',role:'Объединяет выпускные каналы двигателя.',links:['turbo','heads'],shape:'manifold'}
+];
+
+{id:'fuel-tank',cat:'Топливная система',group:'FUEL / STORAGE',name:'Топливный бак',en:'Fuel tank',qty:'1 узел',tag:'Топливная система',desc:'Ёмкость для хранения топлива. Форма, материал, объём и конструкция защиты в исходных материалах окончательно не определены.',role:'Хранит запас топлива автомобиля.',links:['fuel-pump','injectors'],shape:'tank'},
+{id:'fuel-pump',cat:'Топливная система',group:'FUEL / DELIVERY',name:'Топливный насос',en:'Fuel pump',qty:'Комплект по системе',tag:'Топливная система',desc:'Насосный узел подачи топлива от бака к системе впрыска. Давление и производительность в документах не специфицированы.',role:'Обеспечивает подачу топлива.',links:['fuel-tank','injectors'],shape:'pump'},
+{id:'injectors',cat:'Топливная система',group:'FUEL / INJECTION',name:'Топливные форсунки',en:'Fuel injectors',qty:'Комплект по цилиндрам',tag:'Система впрыска',desc:'Электромеханические устройства дозирования топлива. В проекте описана двухконтурная концепция впрыска, однако точные параметры не заданы.',role:'Обеспечивают дозированную подачу топлива.',links:['fuel-pump','fuel-tank','block'],shape:'injector'},
+{id:'motors',cat:'Гибрид',group:'HYBRID / E-DRIVE',name:'Передние электромоторы',en:'Front electric motors',qty:'2 шт. по концепции',tag:'Суммарно ~950 л.с. — оценка ТЗ',desc:'Электрические тяговые машины на передней оси. Мощность из документа является оценкой и не подтверждена стендовыми данными.',role:'Создают электрический крутящий момент на передних колёсах.',links:['inverter','battery','gearbox'],shape:'motor'},
+{id:'battery',cat:'Гибрид',group:'HYBRID / ENERGY STORAGE',name:'Высоковольтная батарея',en:'High-voltage battery pack',qty:'20–30 кВт·ч — оценка ТЗ',tag:'Ёмкость из документа',desc:'Накопитель электрической энергии для тяговых электромоторов и вспомогательных систем. Химический состав, напряжение, охлаждение, защита и сертификация не определены.',role:'Хранит электрическую энергию и отдаёт её силовой электронике.',links:['inverter','motors','cooler'],shape:'battery'},
+{id:'inverter',cat:'Гибрид',group:'HYBRID / POWER ELECTRONICS',name:'Инвертор',en:'Traction inverter',qty:'По одному каналу управления на электропривод — концепция',tag:'Силовая электроника',desc:'Преобразует электрическую энергию батареи в форму, необходимую тяговому электромотору, и управляет его работой. Точные схемы и параметры отсутствуют.',role:'Связывает батарею, электромоторы и управляющую электронику.',links:['battery','motors'],shape:'inverter'},
+{id:'gearbox',cat:'Трансмиссия',group:'DRIVETRAIN / TRANSMISSION',name:'Планетарная автоматическая КПП',en:'Planetary automatic transmission',qty:'1 коробка, 4 ступени — ТЗ',tag:'Концепция КПП',desc:'Трансмиссия с планетарными рядами и гидротрансформатором. Основной документ описывает одну физическую четырёхступенчатую коробку и программные карты переключения Auto, Robot и Manual.',role:'Передаёт и преобразует крутящий момент двигателя к заднему приводу.',links:['converter','differential','crank'],shape:'gearbox'},
+{id:'converter',cat:'Трансмиссия',group:'DRIVETRAIN / TORQUE CONVERTER',name:'Гидротрансформатор',en:'Torque converter',qty:'1 узел в составе АКПП',tag:'Указан в регламенте ТО',desc:'Гидродинамический узел между двигателем и автоматической коробкой. Передаёт момент через поток рабочей жидкости.',role:'Передаёт вращение двигателя на вход коробки.',links:['gearbox'],shape:'converter'},
+{id:'differential',cat:'Трансмиссия',group:'DRIVETRAIN / DIFFERENTIAL',name:'Дифференциал',en:'Differential',qty:'По ведущей оси / компоновке',tag:'Узел привода',desc:'Механизм распределения вращения между полуосями ведущей оси, позволяющий колёсам проходить поворот с разными скоростями.',role:'Передаёт момент к полуосям и допускает разницу скоростей колёс.',links:['gearbox','driveshaft'],shape:'diff'},
+{id:'driveshaft',cat:'Трансмиссия',group:'DRIVETRAIN / SHAFTS',name:'Карданный вал и приводы',en:'Driveshafts & half-shafts',qty:'По компоновке привода',tag:'Упомянуты в регламенте',desc:'Валы и шарнирные соединения передают вращение между агрегатами трансмиссии и колёсами.',role:'Передают механическую тягу от трансмиссии к ведущим колёсам.',links:['differential','gearbox','hub'],shape:'shaft'},
+{id:'steering',cat:'Шасси',group:'CHASSIS / STEERING',name:'Рулевой механизм с электроусилителем',en:'Electric power steering',qty:'1 система',tag:'Переменное передаточное число — ТЗ',desc:'Система рулевого управления с электроусилителем и изменяемым передаточным отношением по концепции.',role:'Передаёт команды водителя на управляемые колёса.',links:['hub','suspension'],shape:'steering'},
+{id:'suspension',cat:'Шасси',group:'CHASSIS / SUSPENSION',name:'Активный амортизатор',en:'Active hydraulic damper',qty:'Комплект по колёсам',tag:'Трёхкамерный — ТЗ',desc:'Элемент активной гидравлической подвески, гасящий колебания кузова и контролирующий движение колеса.',role:'Контролирует колебания подвески.',links:['air-strut','control-arm','hub'],shape:'damper'},
+{id:'air-strut',cat:'Шасси',group:'CHASSIS / AIR SUSPENSION',name:'Пневмостойка и пневмобаллон',en:'Air spring / air strut',qty:'4 стойки — ТЗ',tag:'Городской контур',desc:'Пневматический упругий элемент, позволяющий изменять высоту кузова и обеспечивать комфортный дорожный режим.',role:'Поддерживает массу автомобиля и обеспечивает изменение дорожного просвета.',links:['suspension','control-arm'],shape:'air'},
+{id:'control-arm',cat:'Шасси',group:'CHASSIS / LINKS',name:'Рычаг подвески',en:'Suspension control arm',qty:'Комплект по осям',tag:'Материалы-варианты ТЗ',desc:'Связывает ступичный узел с подрамником и задаёт траекторию движения колеса.',role:'Удерживает положение колеса относительно кузова.',links:['hub','suspension','air-strut'],shape:'arm'},
+{id:'hub',cat:'Шасси',group:'CHASSIS / WHEEL END',name:'Ступица колеса',en:'Wheel hub',qty:'4 узла',tag:'Узел колеса',desc:'Подшипниковый и крепёжный узел, соединяющий колесо с подвеской и приводом.',role:'Обеспечивает вращение колеса и передачу нагрузок.',links:['driveshaft','control-arm','brakes'],shape:'hub'},
+{id:'brakes',cat:'Тормоза',group:'BRAKES / ROTOR',name:'Карбон-керамический тормозной диск',en:'Carbon-ceramic brake rotor',qty:'По одному на колесо',tag:'Карбон-керамика — ТЗ',desc:'Фрикционный ротор тормозной системы. При прижатии колодок преобразует кинетическую энергию автомобиля в тепло.',role:'Создаёт тормозной момент совместно с суппортом и колодками.',links:['pads','hub'],shape:'disc'},
+{id:'pads',cat:'Тормоза',group:'BRAKES / PADS',name:'Тормозные колодки',en:'Brake pads',qty:'Комплект на суппорт',tag:'Карбон-керамическая система — ТЗ',desc:'Фрикционные элементы, которые прижимаются к тормозному диску и создают замедляющий момент.',role:'Создают трение о тормозной диск при торможении.',links:['brakes','hub'],shape:'pad'},
+{id:'monocoque',cat:'Кузов',group:'BODY / STRUCTURE',name:'Монокок и силовая структура',en:'Monocoque chassis',qty:'1 несущая структура',tag:'Компоновка требует выбора',desc:'Основная несущая структура автомобиля, к которой крепятся агрегаты, подвеска и элементы кузова.',role:'Объединяет автомобиль в единую силовую структуру.',links:['control-arm','gearbox','battery'],shape:'monocoque'},
+{id:'tires',cat:'Колёса',group:'WHEELS / TIRES',name:'Шины и колёсный диск',en:'Tire & wheel',qty:'4 колеса',tag:'Дорожные / специальные составы — ТЗ',desc:'Шина обеспечивает контакт автомобиля с покрытием, а колесный диск служит её несущей основой и соединяется со ступицей.',role:'Передаёт продольные и поперечные силы между автомобилем и дорогой.',links:['hub','brakes'],shape:'wheel'}
+];
+
+const partFilters=[
+ 'Все','Двигатель','Наддув','Топливная система',
+ 'Гибрид','Трансмиссия','Шасси','Тормоза',
+ 'Охлаждение','Электрика','Кузов','Колёса'
+];
+
+let activeCat='Все';
+let activePart=parts[0];
+
+const filterHost=document.getElementById('partFilters');
+const itemsHost=document.getElementById('partItems');
+
+partFilters.forEach(c=>{
+ let b=document.createElement('button');
+ b.textContent=c;
+ b.className=c===activeCat?'active':'';
+
+ b.onclick=()=>{
+  activeCat=c;
+
+  [...filterHost.children].forEach(x=>
+   x.classList.toggle('active',x.textContent===c)
+  );
+
+  renderParts();
+ };
+
+ filterHost.appendChild(b);
+});
+
+function renderParts(){
+ let q=(document.getElementById('partSearch').value||'').toLowerCase();
+
+ itemsHost.innerHTML='';
+
+ parts.filter(p=>
+  (activeCat==='Все'||p.cat===activeCat)&&
+  (!q||(p.name+' '+p.en+' '+p.desc).toLowerCase().includes(q))
+ ).forEach(p=>{
+  let b=document.createElement('button');
+
+  b.className='part-choice'+
+   (p.id===activePart.id?' active':'');
+
+  b.innerHTML=`${p.name}<small>${p.en}</small>`;
+
+  b.onclick=()=>selectPart(p.id);
+
+  itemsHost.appendChild(b);
+ });
+}
+
+function selectPart(id){
+ activePart=parts.find(p=>p.id===id)||parts[0];
+
+ document.getElementById('partGroup').textContent=activePart.group;
+ document.getElementById('partName').textContent=activePart.name;
+ document.getElementById('partEn').textContent=activePart.en;
+ document.getElementById('partTag').textContent=activePart.tag;
+ document.getElementById('partGroupFact').textContent=activePart.cat;
+ document.getElementById('partQty').textContent=activePart.qty;
+ document.getElementById('partDesc').textContent=activePart.desc;
+ document.getElementById('partRole').textContent=activePart.role;
+
+ const links=document.getElementById('partLinks');
+ links.innerHTML='';
+
+ activePart.links.forEach(id=>{
+  const p=parts.find(x=>x.id===id);
+
+  if(!p)return;
+
+  let b=document.createElement('button');
+  b.textContent=p.name;
+  b.onclick=()=>selectPart(p.id);
+
+  links.appendChild(b);
+ });
+
+ renderParts();
+
+ if(window.showPartModel)
+  window.showPartModel(activePart.shape);
+}
+
+document.getElementById('partSearch').addEventListener(
+ 'input',renderParts
+);
+
+renderParts();
+selectPart('block');
