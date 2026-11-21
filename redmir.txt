@@ -1,4 +1,0 @@
-W16 PROJECT вЂ” РїР°РєРµС‚ РґР»СЏ GitHub Pages
-
-Р—Р°РіСЂСѓР·РёС‚Рµ index.html РІ РєРѕСЂРµРЅСЊ РїСѓР±Р»РёС‡РЅРѕРіРѕ GitHub-СЂРµРїРѕР·РёС‚РѕСЂРёСЏ.
-Р—Р°С‚РµРј РѕС‚РєСЂРѕР№С‚Рµ Settings в†’ Pages Рё РІС‹Р±РµСЂРёС‚Рµ Deploy from a branch в†’ main в†’ /(root) в†’ Save.
